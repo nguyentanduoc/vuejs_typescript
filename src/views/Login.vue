@@ -1,6 +1,9 @@
 <template>
 	<!-- login  -->
 	<div class="modal-body align-w3">
+		<div class="alert alert-danger" role="alert" v-if="loginError.length > 0">
+			{{loginError}}
+		</div>
 		<form action="#" method="post" class="p-sm-3" @submit.prevent="login">
 			<div class="form-group">
 				<label for="recipient-name" class="col-form-label">Username</label>
@@ -40,23 +43,39 @@ import UserSubmit from '@/typescript/userSubmit';
 
 @Component
 export default class Login extends Vue {
-  private usernameOrEmail: string;
-  private password: string;
+  public usernameOrEmail: string;
+  public password: string;
+  public loginError: string;
 
   constructor(props: object) {
     super(props);
     this.usernameOrEmail = '';
     this.password = '';
+    this.loginError = '';
   }
 
-  private login() {
+  public async login() {
     const userSubmit = new UserSubmit();
     userSubmit.usernameOrEmail = this.usernameOrEmail;
     userSubmit.password = this.password;
-    authentication.login(userSubmit).then(() => {
+    await authentication.login(userSubmit);
+    if (authentication.gethasErrored && authentication.getError) {
+      this.loginError = authentication.getError;
+    } else {
       this.$router.push('/');
-    });
+    }
   }
+
+  // login() {
+  //   const userSubmit = new UserSubmit();
+  //   userSubmit.usernameOrEmail = this.usernameOrEmail;
+  //   userSubmit.password = this.password;
+  //   authentication.login(userSubmit).then(() => {
+  //     this.$router.push('/');
+  //   }).catch((err) => {
+  //     console.log(err);
+  //   });
+  // }
 }
 </script>
 <style lang="scss">

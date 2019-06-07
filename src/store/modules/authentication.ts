@@ -1,4 +1,4 @@
-import {Action, getModule, Module, Mutation, VuexModule} from 'vuex-module-decorators';
+import {getModule, Module, Mutation, MutationAction, VuexModule} from 'vuex-module-decorators';
 import store from '@/store';
 import Authentication from '@/typescript/authentication';
 import UserSubmit from '@/typescript/userSubmit';
@@ -11,7 +11,9 @@ import {login} from '@/api/authenticationApi';
   dynamic: true,
 })
 class AuthenticationModule extends VuexModule {
-  private authentication: Authentication | null = null;
+  public authentication: Authentication | null = null;
+  public error: string | null = '';
+  public hasErrored: boolean | null = false;
 
   @Mutation
   public setAuthentication(authentication: Authentication) {
@@ -22,13 +24,23 @@ class AuthenticationModule extends VuexModule {
     return this.authentication && this.authentication.user || null;
   }
 
-  @Action({commit: 'setAuthentication'})
-  public async login(user: UserSubmit) {
-    login(user).then((response) => {
-      return response;
-    }).catch((error) => {
-      return error;
-    });
+  get getError() {
+    return this.error;
+  }
+
+  get gethasErrored() {
+    return this.hasErrored;
+  }
+
+  @MutationAction
+  public async login(userSubmit: UserSubmit) {
+    return login(userSubmit)
+      .then((authentication) => {
+        return {authentication};
+      }).catch((errorObject) => {
+        const error = errorObject.response.data.debugMessage;
+        return {error, hasErrored: true};
+      });
   }
 }
 
